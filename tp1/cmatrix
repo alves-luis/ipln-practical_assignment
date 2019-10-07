@@ -10,73 +10,73 @@ def processCommand():
     opts, remainder = getopt(sys.argv[1:],'AB')
     return (opts, remainder)
 
+# Add a sentence to the expression dict
+def add_expression( sentence , expression  ):
+    if (tuple(sentence) in expression ):
+        expression[tuple(sentence)] += 1
+    else:
+        expression[tuple(sentence)] = 1
+
+# Add a word to a counter dict
+def add_counter(word, counter, n):
+    if (word[n] in counter):
+        counter[word[n]] += 1
+    else:
+        counter[word[n]] = 1
+
 def processText(filename, word, n, d): 
     fd = open(filename, 'r')
     file = fd.read()
     if (d == '-A'):
         for match in re.findall(rf'{word}((?:\s+\w+){{1,{2}}})', file):
-            cenas = ''.join(filter(None,match)).strip()
-            final = cenas.split()
-            if (final[0] in counter):
-                counter[final[0]] += 1
-            else:
-                counter[final[0]] = 1
-            if (tuple(final) in expression ):
-                expression[tuple(final)] += 1
-            else:
-                expression[tuple(final)] = 1
+            sentence = ''.join(filter(None,match)).strip().split()
+            add_counter(sentence,counter,0)
+            add_expression(sentence,expression)
     elif (d == '-B'):
         for match in re.findall(rf'((?:\w+\s+){{1,{2}}}){word}', file):
-            cenas = ''.join(filter(None,match)).strip()
-            final = cenas.split()
-            if len(final) > 1:
-                if(final[1]):
-                    if (final[1] in counter):
-                        counter[final[1]] += 1
-                    else:
-                        counter[final[1]] = 1
+            sentence = ''.join(filter(None,match)).strip().split()
+            if len(sentence) > 1:
+                add_counter(sentence,counter,1)
             else:
-                if (final[0] in counter):
-                    counter[final[0]] += 1
-                else:
-                    counter[final[0]] = 1
-            if (tuple(final) in expression ):
-                expression[tuple(final)] += 1
-            else:
-                expression[tuple(final)] = 1 
+                add_counter(sentence,counter,0)
+            add_expression(sentence,expression)
     fd.close()
 
-def append(r,e,expression):
+# Add the current expression formated to be printed
+def append(r,e,expression,i):
+    if i in r:
+        r[i].append(' '.join(e)  + " (" + str(expression[e]) + ")")
+    else:
+        r[i] = [(' '.join(e)  + " (" + str(expression[e]) + ")")]
+
 
 def getResult(word,counter,expression,num,letter):
+    # Sort to get the most common word from the counter dict
     resultado = sorted(counter, key=counter.get, reverse=True)[:num]
 
     x = [word]
     r = {word:""}
+
+    # Add the most common words to the list x 
     for e in range(0,min(num,len(resultado))):
         x.append(resultado[e] + " (" + str(counter[resultado[e]]) + ")")
+
+    # Sort to get the most common expression on the dict
     resultadoLista = sorted(expression, key=expression.get, reverse=True)
+
+    # Filter all expressions to those that are used in the most common words
     for i in resultado:
         for e in resultadoLista:
             if letter == '-A':
                 if e[0] == i:
-                    if i in r:
-                        r[i].append(' '.join(e)  + " (" + str(expression[e]) + ")")
-                    else:
-                        r[i] = [(' '.join(e)  + " (" + str(expression[e]) + ")")]
+                    append(r,e,expression,i)
             else:
                 if len(e) > 1:
                     if e[1] == i:
-                        if i in r:
-                            r[i].append(' '.join(e)  + " (" + str(expression[e]) + ")")
-                        else:
-                            r[i] = [(' '.join(e)  + " (" + str(expression[e]) + ")")]
+                        append(r,e,expression,i)
                 else:
                     if e[0] == i:
-                        if i in r:
-                            r[i].append(' '.join(e)  + " (" + str(expression[e]) + ")")
-                        else:
-                            r[i] = [(' '.join(e)  + " (" + str(expression[e]) + ")")]
+                        append(r,e,expression,i)
     print(tabulate(r,headers=x,tablefmt="fancy_grid"))
 
 
@@ -87,8 +87,8 @@ a,b = processCommand()
 
 letter = (a[0])[0]
 word = b[1]
+num = int(b[0])
 
 processText(b[2], word , b[0], letter)
 
-num = int(b[0])
 getResult(word,counter,expression,num,letter)
