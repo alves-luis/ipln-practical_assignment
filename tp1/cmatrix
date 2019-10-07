@@ -84,7 +84,7 @@ def print_result(word, word_counter, expression_counter, num, direction):
     rows = {word:""}
 
     # Generates the result header (truncated to n)
-    for i in range(0,min(num,len(sorted_words))):
+    for i in range(0, min(num,len(sorted_words))):
         header.append(f'{sorted_words[i]} ({word_counter[sorted_words[i]]})')
 
     # Sort to get the most common expression on the dict
@@ -97,12 +97,9 @@ def print_result(word, word_counter, expression_counter, num, direction):
                 if expression[0] == word:
                     append(rows, expression, expression_counter, word)
             else:
-                if len(expression) > 1:
-                    if expression[1] == word:
-                        append(rows, expression, expression_counter, word)
-                else:
-                    if expression[0] == word:
-                        append(r,expression,expression_counter,word)
+                if expression[len(expression) - 1] == word:
+                    append(rows,expression,expression_counter,word)
+
     print(tabulate(rows,headers=header,tablefmt="fancy_grid"))
 
 try:
