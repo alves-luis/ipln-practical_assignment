@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from tabulate import tabulate
 import sys
 from getopt import getopt
 import fileinput
@@ -6,23 +8,87 @@ import re
 
 def processCommand():
     opts, remainder = getopt(sys.argv[1:],'AB')
-    dict_opts = dict(opts)
-    print(remainder)
-    print(opts)
-    return (dict_opts, remainder)
+    return (opts, remainder)
 
-def processText(filename, n, word, d):
+def processText(filename, word, n, d): 
     fd = open(filename, 'r')
     file = fd.read()
-    # if after
     if (d == '-A'):
-        for match in re.findall(rf'{word}((?:\s+\w+){{1,{n}}})', file):
-            print(match)
-    # if b4
+        for match in re.findall(rf'{word}((?:\s+\w+){{1,{2}}})', file):
+            cenas = ''.join(filter(None,match)).strip()
+            final = cenas.split()
+            if (final[0] in counter):
+                counter[final[0]] += 1
+            else:
+                counter[final[0]] = 1
+            if (tuple(final) in expression ):
+                expression[tuple(final)] += 1
+            else:
+                expression[tuple(final)] = 1
     elif (d == '-B'):
-        for match in re.findall(rf'((?:\w+\s+){{1,{n}}}){word}', file):
-            print(match)
-
+        for match in re.findall(rf'((?:\w+\s+){{1,{2}}}){word}', file):
+            cenas = ''.join(filter(None,match)).strip()
+            final = cenas.split()
+            if len(final) > 1:
+                if(final[1]):
+                    if (final[1] in counter):
+                        counter[final[1]] += 1
+                    else:
+                        counter[final[1]] = 1
+            else:
+                if (final[0] in counter):
+                    counter[final[0]] += 1
+                else:
+                    counter[final[0]] = 1
+            if (tuple(final) in expression ):
+                expression[tuple(final)] += 1
+            else:
+                expression[tuple(final)] = 1 
     fd.close()
 
-processText('exemplo.txt', 3, 'está', '-B')
+def append(r,e,expression):
+
+def getResult(word,counter,expression,num,letter):
+    resultado = sorted(counter, key=counter.get, reverse=True)[:num]
+
+    x = [word]
+    r = {word:""}
+    for e in range(0,min(num,len(resultado))):
+        x.append(resultado[e] + " (" + str(counter[resultado[e]]) + ")")
+    resultadoLista = sorted(expression, key=expression.get, reverse=True)
+    for i in resultado:
+        for e in resultadoLista:
+            if letter == '-A':
+                if e[0] == i:
+                    if i in r:
+                        r[i].append(' '.join(e)  + " (" + str(expression[e]) + ")")
+                    else:
+                        r[i] = [(' '.join(e)  + " (" + str(expression[e]) + ")")]
+            else:
+                if len(e) > 1:
+                    if e[1] == i:
+                        if i in r:
+                            r[i].append(' '.join(e)  + " (" + str(expression[e]) + ")")
+                        else:
+                            r[i] = [(' '.join(e)  + " (" + str(expression[e]) + ")")]
+                else:
+                    if e[0] == i:
+                        if i in r:
+                            r[i].append(' '.join(e)  + " (" + str(expression[e]) + ")")
+                        else:
+                            r[i] = [(' '.join(e)  + " (" + str(expression[e]) + ")")]
+    print(tabulate(r,headers=x,tablefmt="fancy_grid"))
+
+
+counter = {}
+expression = {}
+
+a,b = processCommand()
+
+letter = (a[0])[0]
+word = b[1]
+
+processText(b[2], word , b[0], letter)
+
+num = int(b[0])
+getResult(word,counter,expression,num,letter)
