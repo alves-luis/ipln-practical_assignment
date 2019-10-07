@@ -12,9 +12,17 @@ def processCommand():
     return (dict_opts, remainder)
 
 def processText(filename, n, word, d):
-    file = open(filename, 'r').read()
+    fd = open(filename, 'r')
+    file = fd.read()
+    # if after
     if (d == '-A'):
-        for match in re.findall(rf'{word}(\s\w){2}', file):
+        for match in re.findall(rf'{word}((?:\s+\w+){{1,{n}}})', file):
+            print(match)
+    # if b4
+    elif (d == '-B'):
+        for match in re.findall(rf'((?:\w+\s+){{1,{n}}}){word}', file):
             print(match)
 
-processText('exemplo.txt', 3, 'está', '-A')
+    fd.close()
+
+processText('exemplo.txt', 3, 'está', '-B')
