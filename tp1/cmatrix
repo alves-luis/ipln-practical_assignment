@@ -28,41 +28,46 @@ def parse_command():
     return (direction, word, num, filename)
 
 # Add a sentence to the expression dict
-def add_expression(sentence, expression):
-    if (tuple(sentence) in expression ):
-        expression[tuple(sentence)] += 1
+def update_expression_counter(sentence, expressions_dic):
+    if (tuple(sentence) in expressions_dic):
+        expressions_dic[tuple(sentence)] += 1
     else:
-        expression[tuple(sentence)] = 1
+        expressions_dic[tuple(sentence)] = 1
 
 # Given a word and a dictionary, updates the number of ocurrences
 # in that dictionary
-def update_word_counter(word, counter):
-    if (word in counter):
-        counter[word] += 1
+def update_word_counter(word, word_dic):
+    if (word in word_dic):
+        word_dic[word] += 1
     else:
-        counter[word] = 1
+        word_dic[word] = 1
 
 # given a filename, a word and a direction,
 # returns a dictionary with the the count of words that come after or before
 # the given word
 def process_text(filename, word, d):
-    counter = {}
+    word_counter = {}
+    expression_counter = {}
+
     fd = open(filename, 'r')
     file = fd.read()
+
     if (d == '-A'):
         for match in re.findall(rf'{word}((?:\s+\w+){{1,2}})', file):
             sentence = match.split()
             word = sentence[0]
-            update_word_counter(word, counter)
-            add_expression(sentence, expression)
+            update_word_counter(word, word_counter)
+            update_expression_counter(sentence, expression_counter)
+
     elif (d == '-B'):
         for match in re.findall(rf'((?:\w+\s+){{1,2}}){word}', file):
             sentence = match.split()
             word = sentence[len(sentence) - 1]
-            update_word_counter(word, counter)
-            add_expression(sentence, expression)
+            update_word_counter(word, word_counter)
+            update_expression_counter(sentence, expression_counter)
+
     fd.close()
-    return counter
+    return (word_counter, expression_counter)
 
 # Add the current expression formated to be printed
 def append(r,e,expression,i):
@@ -72,7 +77,7 @@ def append(r,e,expression,i):
         r[i] = [(' '.join(e)  + " (" + str(expression[e]) + ")")]
 
 
-def get_result(word,counter,expression,num,letter):
+def get_result(word,counter,expression,num, direction):
     # Sort to get the most common word from the counter dict
     resultado = sorted(counter, key=counter.get, reverse=True)[:num]
 
@@ -89,7 +94,7 @@ def get_result(word,counter,expression,num,letter):
     # Filter all expressions to those that are used in the most common words
     for i in resultado:
         for e in resultadoLista:
-            if letter == '-A':
+            if direction == '-A':
                 if e[0] == i:
                     append(r,e,expression,i)
             else:
@@ -101,11 +106,9 @@ def get_result(word,counter,expression,num,letter):
                         append(r,e,expression,i)
     print(tabulate(r,headers=x,tablefmt="fancy_grid"))
 
-expression = {}
-
 try:
     direction, word, num, filename = parse_command()
-    word_count = process_text(filename, word, direction)
-    get_result(word,word_count,expression,num,direction)
+    word_count, expression_count = process_text(filename, word, direction)
+    get_result(word, word_count, expression_count, num, direction)
 except Exception as e:
     print(e)
