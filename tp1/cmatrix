@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+import sys
+from getopt import getopt
+import fileinput
+import re
+
+def processCommand():
+    opts, remainder = getopt(sys.argv[1:],'AB')
+    dict_opts = dict(opts)
+    print(remainder)
+    print(opts)
+    return (dict_opts, remainder)
+
+def processText(filename, n, word, d):
+    file = open(filename, 'r').read()
+    if (d == '-A'):
+        for match in re.findall(rf'{word}(\s\w){2}', file):
+            print(match)
+
+processText('exemplo.txt', 3, 'está', '-A')
