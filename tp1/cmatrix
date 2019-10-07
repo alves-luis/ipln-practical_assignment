@@ -69,12 +69,14 @@ def process_text(filename, word, d):
     fd.close()
     return (word_counter, expression_counter)
 
-# Add the current expression formated to be printed
-def append(r,e,expression,i):
-    if i in r:
-        r[i].append(' '.join(e)  + " (" + str(expression[e]) + ")")
+# Add the given expression formated to be printed
+def append(rows, expression, expression_counter, word):
+    str_expression = ' '.join(expression)
+    to_append = f'{str_expression} ({expression_counter[expression]})'
+    if word in rows:
+        rows[word].append(to_append)
     else:
-        r[i] = [(' '.join(e)  + " (" + str(expression[e]) + ")")]
+        rows[word] = [to_append]
 
 def print_result(word, word_counter, expression_counter, num, direction):
     # Sort to get the most common word from the counter dict
@@ -98,7 +100,7 @@ def print_result(word, word_counter, expression_counter, num, direction):
                     append(rows, expression, expression_counter, word)
             else:
                 if expression[len(expression) - 1] == word:
-                    append(rows,expression,expression_counter,word)
+                    append(rows, expression, expression_counter, word)
 
     print(tabulate(rows,headers=header,tablefmt="fancy_grid"))
 
