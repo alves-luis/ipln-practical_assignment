@@ -76,39 +76,38 @@ def append(r,e,expression,i):
     else:
         r[i] = [(' '.join(e)  + " (" + str(expression[e]) + ")")]
 
-
-def get_result(word,counter,expression,num, direction):
+def print_result(word, word_counter, expression_counter, num, direction):
     # Sort to get the most common word from the counter dict
-    resultado = sorted(counter, key=counter.get, reverse=True)[:num]
+    sorted_words = sorted(word_counter, key=word_counter.get, reverse=True)[:num]
 
-    x = [word]
-    r = {word:""}
+    header = [word]
+    rows = {word:""}
 
-    # Add the most common words to the list x
-    for e in range(0,min(num,len(resultado))):
-        x.append(resultado[e] + " (" + str(counter[resultado[e]]) + ")")
+    # Generates the result header (truncated to n)
+    for i in range(0,min(num,len(sorted_words))):
+        header.append(f'{sorted_words[i]} ({word_counter[sorted_words[i]]})')
 
     # Sort to get the most common expression on the dict
-    resultadoLista = sorted(expression, key=expression.get, reverse=True)
+    sorted_expressions = sorted(expression_counter, key=expression_counter.get, reverse=True)
 
     # Filter all expressions to those that are used in the most common words
-    for i in resultado:
-        for e in resultadoLista:
+    for word in sorted_words:
+        for expression in sorted_expressions:
             if direction == '-A':
-                if e[0] == i:
-                    append(r,e,expression,i)
+                if expression[0] == word:
+                    append(rows, expression, expression_counter, word)
             else:
-                if len(e) > 1:
-                    if e[1] == i:
-                        append(r,e,expression,i)
+                if len(expression) > 1:
+                    if expression[1] == word:
+                        append(rows, expression, expression_counter, word)
                 else:
-                    if e[0] == i:
-                        append(r,e,expression,i)
-    print(tabulate(r,headers=x,tablefmt="fancy_grid"))
+                    if expression[0] == word:
+                        append(r,expression,expression_counter,word)
+    print(tabulate(rows,headers=header,tablefmt="fancy_grid"))
 
 try:
     direction, word, num, filename = parse_command()
     word_count, expression_count = process_text(filename, word, direction)
-    get_result(word, word_count, expression_count, num, direction)
+    print_result(word, word_count, expression_count, num, direction)
 except Exception as e:
     print(e)
