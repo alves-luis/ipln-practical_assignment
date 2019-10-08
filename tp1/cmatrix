@@ -16,11 +16,17 @@ def parse_command():
     if (len(remainder) != 3):
         raise Exception('Invalid number of arguments! You need to specify 3 arguments (besides the option)!')
 
-    flag = False
+    ponctuation = True
     if ('-P','') in opts:
-        flag=True
+        ponctuation = False
 
-    if (opts[0][0]== '-P'):
+    if ('-A','') in opts and ('-B','') in opts:
+        raise Exception('Conflicting directions! Choose either -A or -B!')
+
+    if ('-A','') not in opts and ('-B','') not in opts:
+        raise Exception('You need to specify 1 direction! Choose -A for after, -B for before!')
+
+    if (opts[0][0] == '-P'):
         direction = opts[1][0]
     else:
         direction = opts[0][0]
@@ -33,7 +39,7 @@ def parse_command():
     except ValueError:
         raise Exception('Invalid number of most common words! Please use cmatrix -A|B <num> <word> <filename>')
 
-    return (direction, word, num, filename, flag)
+    return (direction, word, num, filename, ponctuation)
 
 # Add a sentence to the expression dict
 def update_expression_counter(sentence, expressions_dic):
@@ -53,17 +59,18 @@ def update_word_counter(word, word_dic):
 # given a filename, a word and a direction,
 # returns a dictionary with the the count of words that come after or before
 # the given word
-def process_text(filename, word, d, flag):
+def process_text(filename, word, d, ponctuation):
     word_counter = {}
     expression_counter = {}
 
     fd = open(filename, 'r')
     file = fd.read()
 
-    if flag:
-        file=re.sub(r"([,?!.;])","",file)
+    if not ponctuation:
+        file = re.sub(r"([,?!.;])","",file)
 
-    file=re.sub(r"([,;])","",file)
+    # remove commas from the text
+    file = re.sub(r"([,;])","",file)
 
     if (d == '-A'):
         for match in re.findall(rf'{word}((?:\s+[\w\-]+){{1,2}})', file):
@@ -118,8 +125,8 @@ def print_result(word, word_counter, expression_counter, num, direction):
     print(tabulate(rows,headers=header,tablefmt="fancy_grid"))
 
 try:
-    direction, word, num, filename, flag = parse_command()
-    word_count, expression_count = process_text(filename, word, direction,flag)
+    direction, word, num, filename, ponctuation = parse_command()
+    word_count, expression_count = process_text(filename, word, direction, ponctuation)
     print_result(word, word_count, expression_count, num, direction)
 except Exception as e:
     print(e)
