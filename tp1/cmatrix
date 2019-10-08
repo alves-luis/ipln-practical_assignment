@@ -73,14 +73,14 @@ def process_text(filename, word, d, ponctuation):
     file = re.sub(r"([,;])","",file)
 
     if (d == '-A'):
-        for match in re.findall(rf'{word}((?:\s+[\w\-]+){{1,2}})', file):
+        for match in re.findall(rf'\b{word}((?:\s+[\w\-]+){{1,2}})', file):
             sentence = match.split()
             word = sentence[0]
             update_word_counter(word, word_counter)
             update_expression_counter(sentence, expression_counter)
 
     elif (d == '-B'):
-        for match in re.findall(rf'((?:[\w\-]+\s+){{1,2}}){word}', file):
+        for match in re.findall(rf'((?:[\w\-]+\s+){{1,2}}){word}\b', file):
             sentence = match.split()
             word = sentence[len(sentence) - 1]
             update_word_counter(word, word_counter)
@@ -93,7 +93,7 @@ def process_text(filename, word, d, ponctuation):
 def append(rows, expression, expression_counter, word):
     str_expression = ' '.join(expression)
     to_append = f'{str_expression} ({expression_counter[expression]})'
-    if word in rows:
+    if word in rows and rows[word]:
         rows[word].append(to_append)
     else:
         rows[word] = [to_append]
