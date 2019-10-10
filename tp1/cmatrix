@@ -68,9 +68,9 @@ def process_text(filename, word, d, ponctuation):
 
     if not ponctuation:
         file = re.sub(r"([,?!.;])","",file)
-
-    # remove commas from the text
-    file = re.sub(r"([,;])","",file)
+    else:
+        # remove commas from the text
+        file = re.sub(r"([,;])","",file)
 
     if (d == '-A'):
         for match in re.findall(rf'\b{word}((?:\s+[\w\-]+){{1,2}})', file):
