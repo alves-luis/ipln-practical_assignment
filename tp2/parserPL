@@ -10,7 +10,7 @@ import fileinput
 
 
 def addToDic(dic,file,text):
-    language = re.findall(r"dic/(.*)\.txt",file)
+    language = re.search(r"dic/(.*)\.txt",file).expand(r"\1")
     words = re.findall(r"(.*)\n",text)
     for word in words:
         if not word in dic:
