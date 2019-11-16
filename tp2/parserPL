@@ -1,0 +1,37 @@
+#!/usr/bin/python3
+"""
+ParserPL - saving words from multiple languages in a shelve
+"""
+
+import re
+import shelve
+import sys
+import fileinput
+
+
+def addToDic(dic,file,text):
+    language = re.findall(r"dic/(.*)\.txt",file)
+    words = re.findall(r"(.*)\n",text)
+    for word in words:
+        if not word in dic:
+            dic[word] = [language]
+        else:
+            lang = dic[word]
+            lang.append(language)
+            dic[word] = lang
+
+
+def main():
+
+    dic = shelve.open("dicionario")
+
+    # Reads files from file
+    for file in fileinput.input():
+        file = file.rstrip()
+        text = open(file,encoding="iso-8859-1").read()
+        addToDic(dic,file,text)
+
+    dic.close()
+
+
+main()
