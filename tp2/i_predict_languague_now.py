@@ -46,12 +46,12 @@ def add_text_to_dict(d,texto,percent_win,language_to_add, resto):
             if word in d:
                 # Check if the word in the dictionary has the language_to_add
                 if language_to_add not in d[word]:
-                    var = d[word];
+                    var = d[word]
                     var.append( language_to_add )
                     d[word] = var
-                else:
-                    # If word doesn't exist in the dictionary add it
-                    d[word] = [language_to_add]
+            else:
+                # If word doesn't exist in the dictionary add it
+                d[word] = [language_to_add]
 
 
 def main():
