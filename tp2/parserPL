@@ -8,7 +8,6 @@ import shelve
 import sys
 import fileinput
 
-
 def addToDic(dic,file,text):
     language = re.search(r"dic/(.*)\.txt",file).expand(r"\1")
     words = re.findall(r"(.*)\n",text)

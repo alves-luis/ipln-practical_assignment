@@ -12,13 +12,12 @@ import fileinput
 from collections import Counter
 import shelve
 
-def find_lang(texto, d, language_counter):
+def find_lang(texto, dic, language_counter):
     num_w = 0
     for word in [i for i in re.split(r'[\s\t\n,.?!]',texto) if i]: # run through every word of the text
         num_w += 1
-        if word in d: # check if the word exists in the dictonaries
-            current_filtered = []
-            for language in d[word]: # run through the list of languages
+        if word in dic: # check if the word exists in the dictionaries
+            for language in dic[word]: # run through the list of languages
                 language_counter[language] += 1
     return num_w
 
@@ -27,12 +26,15 @@ def print_stats(language_counter, num_words):
     top_2 = language_counter.most_common(2)
     percentage_of_winner_lang = top_2[0][1] / num_words * 100
     percentage_of_loser_lang = top_2[1][1] / num_words * 100
+
     print(f"I believe this text is in {top_2[0][0]}! I'm {percentage_of_winner_lang}% sure!")
     if percentage_of_loser_lang > 50:
         print(f"However, it was a close call! {top_2[1][0]} seems like a close fit, with {percentage_of_loser_lang}% of matching words!")
+
     return percentage_of_winner_lang, percentage_of_loser_lang
 
 
+# if option -A
 def add_text_to_dict(d,texto,percent_win,language_to_add, resto):
     for e in range(len(resto)):
         if resto[e] == '-A':
@@ -66,8 +68,6 @@ def main():
     d = shelve.open( resto[0]) # open -- file may get suffix added by low-level
 
     num_words = find_lang(texto, d , cnt)
-    print(num_words)
-    print(cnt.most_common(2))
     percent_win, percent_los = print_stats(cnt, num_words)
 
     language_to_add = cnt.most_common(1)[0][0]
