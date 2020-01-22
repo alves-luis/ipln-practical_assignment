@@ -1,0 +1,60 @@
+#!/usr/bin/python3
+
+from getopt import getopt
+import fileinput
+import sys
+import subprocess
+import re
+
+dic_pos = {}
+
+def define_dic_pos():
+    dic_pos['adj'] = r'A.{5}'
+    dic_pos['conj'] = r'C.'
+    dic_pos['deter'] = r'D.{4}'
+    dic_pos['noun'] = r'N.{6}'
+    dic_pos['pro'] = r'P.{7}'
+    dic_pos['adv'] = r'R.'
+    dic_pos['verb'] = r'V.{6}'
+    dic_pos['numb'] = r'Z'
+    dic_pos['interj'] = r'I'
+
+def process_command_line():
+    opts, remainder = getopt(sys.argv[1:], "p:t")
+    dic_opts = dict(opts)
+
+    if '-p' not in dic_opts.keys():
+        raise Exception("No pattern provided! Please use -p '<pattern>'")
+    pattern = dic_opts['-p']
+
+    if len(remainder) < 1:
+        raise Exception("No filename provided! Please specify a filename!")
+    filename = remainder[0]
+    return (pattern, filename)
+
+def tag_file(filename):
+    type = "tagger"
+    lang = "pt"
+    return subprocess.getoutput([f"linguakit {type} {lang} {filename}"])
+
+def get_pattern(padrao):
+    result = ""
+    for p in padrao.split(" "):
+        result += rf"(\w+) \w+ {dic_pos[p]}\n"
+    return result
+
+def match(txt,padrao):
+    solution = []
+    pattern = get_pattern(padrao)
+    for res in re.findall(pattern,txt):
+        solution.append(" ".join(res))
+    return solution
+
+def main():
+    define_dic_pos()
+    pattern, filename = process_command_line()
+    tagged_file = tag_file(filename)
+    print(match(tagged_file, pattern))
+
+
+main()
